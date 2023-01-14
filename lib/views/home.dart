@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cook_panda_flutter/models/recipe.api.dart';
+import 'package:cook_panda_flutter/models/recipe.dart';
 import 'package:cook_panda_flutter/views/widgets/recipe_card.dart';
 
 class HomePage extends StatefulWidget {
@@ -7,6 +9,22 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  List<Recipe> _recipes;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    getRecipes();
+  }
+
+  Future<void> getRecipes() async {
+    _recipes = await RecipeApi.getRecipe();
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,15 +34,21 @@ class _HomePageState extends State<HomePage> {
             children: [
               Icon(Icons.restaurant_menu),
               SizedBox(width: 10),
-              Text('Cook Panda'),
+              Text('Food Recipe')
             ],
           ),
         ),
-        body: RecipeCard(
-          title: 'My recipe',
-          rating: '4.9',
-          cookTime: '30 min',
-          thumbnailUrl: 'https://picsum.photos/seed/picsum/200/300',
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : ListView.builder(
+          itemCount: _recipes.length,
+          itemBuilder: (context, index) {
+            return RecipeCard(
+                title: _recipes[index].name,
+                cookTime: _recipes[index].totalTime,
+                rating: _recipes[index].rating.toString(),
+                thumbnailUrl: _recipes[index].images);
+          },
         ));
   }
 }
